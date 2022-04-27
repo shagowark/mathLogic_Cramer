@@ -47,19 +47,58 @@ public class Logic {
         return result;
     }
 
-    public static double[][] getResultByGaussFrame(int[][] matrixA, int[][] matrixB) {
-        double[][] result = new double[matrixA[0].length][1];
-        for (int i = 0; i < matrixA[0].length; i++){
-            int[][] tempMatrixA = new int[matrixA.length][matrixA[0].length];
-            for (int r = 0; r < tempMatrixA.length; r++){
-                for (int c = 0; c < tempMatrixA[0].length; c++){
-                    tempMatrixA[r][c] = matrixA[r][c];
+    public static double[][] getResultByGaussFrame(int[][] extendedMatrix) {
+        double[][] extendedMatrixDouble = new double[extendedMatrix.length][extendedMatrix[0].length];
+        for (int i = 0; i < extendedMatrix.length; i++){
+            for (int j = 0; j < extendedMatrix[0].length; j++){
+                extendedMatrixDouble[i][j] = extendedMatrix[i][j];
+            }
+        }
+        return solveByGauss(extendedMatrixDouble);
+    }
+
+    public static double[][] solveByGauss(double[][] extendedMatrix) {
+        double[][] result = new double[extendedMatrix.length][1];
+
+        // прямой ход
+        int currentX = 0;
+        for (int i = 0; i < extendedMatrix.length; i++){
+            double del = extendedMatrix[i][currentX];
+            for (int j = 0; j < extendedMatrix[0].length; j++){
+                extendedMatrix[i][j] /= del;
+            }
+
+            if (i == extendedMatrix.length - 1){
+                continue;
+            }
+
+            for (int row = i+1; row < extendedMatrix.length; row++){
+                double coef = extendedMatrix[row][currentX] / extendedMatrix[i][currentX];
+                for (int col = 0; col < extendedMatrix[0].length; col++){
+                    extendedMatrix[row][col] -= extendedMatrix[i][col] * coef;
                 }
             }
-            for (int j = 0; j < tempMatrixA.length; j++){
-                tempMatrixA[j][i] = matrixB[j][0];
+
+            currentX++;
+        }
+
+        // обратный ход
+        currentX = extendedMatrix[0].length - 2;
+        for (int i = extendedMatrix.length - 1 ; i > 0; i--) {
+
+            for (int row = i-1; row > -1; row--){
+                double coef = extendedMatrix[row][currentX] / extendedMatrix[i][currentX];
+                for (int col = 0; col < extendedMatrix[0].length; col++){
+                    extendedMatrix[row][col] -= extendedMatrix[i][col] * coef;
+                }
             }
-            result[i][0] = (double) solveDeterminant(tempMatrixA) / solveDeterminant(matrixA);
+
+            currentX--;
+        }
+
+        // запись результатов
+        for (int i = 0; i < extendedMatrix.length; i++){
+            result[i][0] = extendedMatrix[i][extendedMatrix[0].length-1];
         }
 
         return result;

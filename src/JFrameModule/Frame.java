@@ -103,24 +103,11 @@ public class Frame extends JFrame{
 
         buttonGetResultByGauss.addActionListener(e -> {
             try {
-                int[][] coefficients = JTableUtils.readIntMatrixFromJTable(tableInput);
-                Logic.checkIfArrayIsNull(coefficients);
+                int[][] matrix = JTableUtils.readIntMatrixFromJTable(tableInput);
+                Logic.checkIfArrayIsNull(matrix);
 
-                int[][] matrixA = new int[coefficients.length][coefficients[0].length - 1];
-                Logic.checkIfArrayIsSquare(matrixA);
-                int[][] matrixB = new int[coefficients.length][1];
 
-                for (int i = 0; i < coefficients.length; i++) {
-                    for (int j = 0; j < coefficients[0].length - 1; j++) {
-                        matrixA[i][j] = coefficients[i][j];
-                    }
-                }
-
-                for (int i = 0; i < coefficients.length; i++) {
-                    matrixB[i][0] = coefficients[i][coefficients[0].length-1];
-                }
-
-                double[][] result = Logic.getResultByGaussFrame(matrixA, matrixB);
+                double[][] result = Logic.getResultByGaussFrame(matrix);
 
                 JTableUtils.writeArrayToJTable(tableOutput, result);
             } catch (Exception ex) {
