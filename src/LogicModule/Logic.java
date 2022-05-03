@@ -8,6 +8,9 @@ import java.util.Arrays;
 
 
 public class Logic {
+    public static boolean noResult = false;
+    public static boolean inf = false;
+
     public static void getResultByInverseMatrixFile(String fileNameInput, String fileNameOutput) throws Exception {
         int[][] matrixA = ArrayUtils.readIntArray2FromFile(fileNameInput);
         int[][] matrixB = ArrayUtils.readIntArray2FromFile(fileNameInput);
@@ -58,12 +61,33 @@ public class Logic {
     }
 
     public static double[][] solveByGauss(double[][] extendedMatrix) {
+        noResult = false;
+        inf = false;
+        final double EPS = 0.00001;
+
         double[][] result = new double[extendedMatrix.length][1];
 
         // прямой ход
         int currentX = 0;
         for (int i = 0; i < extendedMatrix.length; i++){
+            double[] tempLine = new double[extendedMatrix[0].length];
+            int lineWithMaxX = i;
+
+            for (int r = i; r < extendedMatrix.length; r++){
+                if (extendedMatrix[r][currentX] > extendedMatrix[lineWithMaxX][currentX]){
+                    tempLine = extendedMatrix[r];
+                    extendedMatrix[r] = extendedMatrix[lineWithMaxX];
+                    extendedMatrix[lineWithMaxX] = tempLine;
+                    lineWithMaxX = r;
+                }
+            }
+
             double del = extendedMatrix[i][currentX];
+
+            if (Math.abs(del) < EPS){ // currX = 0
+                continue;
+            }
+
             for (int j = 0; j < extendedMatrix[0].length; j++){
                 extendedMatrix[i][j] /= del;
             }
@@ -73,6 +97,9 @@ public class Logic {
             }
 
             for (int row = i+1; row < extendedMatrix.length; row++){
+                if (Math.abs(extendedMatrix[row][currentX]) < EPS){
+                    continue;
+                }
                 double coef = extendedMatrix[row][currentX] / extendedMatrix[i][currentX];
                 for (int col = 0; col < extendedMatrix[0].length; col++){
                     extendedMatrix[row][col] -= extendedMatrix[i][col] * coef;
@@ -85,8 +112,25 @@ public class Logic {
         // обратный ход
         currentX = extendedMatrix[0].length - 2;
         for (int i = extendedMatrix.length - 1 ; i > 0; i--) {
+            if (Math.abs(extendedMatrix[i][currentX]) < EPS){
+                if (Math.abs(extendedMatrix[i][extendedMatrix[0].length-1]) < EPS){
+                    inf = true;
+                } else {
+                    noResult = true;
+                    for (int r = 0; r < result.length; r++){
+                        result[i][0] = -999999;
+                    }
+                    return result;
+                }
+                currentX--;
+                continue;
+            }
 
             for (int row = i-1; row > -1; row--){
+                if (Math.abs(extendedMatrix[row][currentX]) < EPS){
+                    currentX--;
+                    continue;
+                }
                 double coef = extendedMatrix[row][currentX] / extendedMatrix[i][currentX];
                 for (int col = 0; col < extendedMatrix[0].length; col++){
                     extendedMatrix[row][col] -= extendedMatrix[i][col] * coef;
@@ -94,6 +138,35 @@ public class Logic {
             }
 
             currentX--;
+        }
+
+        if (inf){ // кол-во ненулевых строк, ранг
+            int count = 0;
+            for (int i = 0; i < extendedMatrix.length; i++){
+                boolean isNullLine = true;
+                for (int j = 0; j < extendedMatrix[0].length; j++){
+                    if (extendedMatrix[i][j] != 0){
+                        isNullLine = false;
+                        break;
+                    }
+                }
+                if (isNullLine){
+                    count++;
+                }
+            }
+
+            for (int i = count; i < result.length; i++){
+                result[i][0] = 1;
+            }
+            int currXIndex = count - 1;
+            for (int i = count-1; i > -1; i--){
+                for (int j = currXIndex+1; j < extendedMatrix[0].length - 1; j++){
+                    result[currXIndex][0] -= extendedMatrix[i][j];
+                }
+                result[currXIndex][0] += extendedMatrix[i][extendedMatrix[0].length - 1];
+            }
+
+            return result;
         }
 
         // запись результатов

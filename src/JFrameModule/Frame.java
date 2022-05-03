@@ -103,13 +103,21 @@ public class Frame extends JFrame{
 
         buttonGetResultByGauss.addActionListener(e -> {
             try {
+
                 int[][] matrix = JTableUtils.readIntMatrixFromJTable(tableInput);
                 Logic.checkIfArrayIsNull(matrix);
-
-
                 double[][] result = Logic.getResultByGaussFrame(matrix);
 
-                JTableUtils.writeArrayToJTable(tableOutput, result);
+                if (Logic.noResult) {
+                    String[] res = {"Нет решений"};
+                    JTableUtils.writeArrayToJTable(tableOutput, res);
+                } else
+                if (Logic.inf){
+                    displayMessage("Бесконечное кол-во решений, представлен один из вариантов");
+                    JTableUtils.writeArrayToJTable(tableOutput, result);
+                } else {
+                    JTableUtils.writeArrayToJTable(tableOutput, result);
+                }
             } catch (Exception ex) {
                 displayError("Ошибка в исходных данных");
             }
