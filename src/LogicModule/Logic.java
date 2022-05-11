@@ -140,7 +140,7 @@ public class Logic {
             currentX--;
         }
 
-        if (inf){ // кол-во ненулевых строк, ранг
+        if (inf){ // кол-во нулевых строк, ранг
             int count = 0;
             for (int i = 0; i < extendedMatrix.length; i++){
                 boolean isNullLine = true;
@@ -155,15 +155,18 @@ public class Logic {
                 }
             }
 
-            for (int i = count; i < result.length; i++){
+            for (int i = result.length-count; i < result.length; i++){
                 result[i][0] = 1;
             }
-            int currXIndex = count - 1;
-            for (int i = count-1; i > -1; i--){
+            int currXIndex = result.length-count-1;
+            for (int i = currXIndex; i > -1; i--){
                 for (int j = currXIndex+1; j < extendedMatrix[0].length - 1; j++){
-                    result[currXIndex][0] -= extendedMatrix[i][j];
+                    result[i][0] -= extendedMatrix[i][j];
                 }
-                result[currXIndex][0] += extendedMatrix[i][extendedMatrix[0].length - 1];
+                for (int j = i+1; j < currXIndex; j++){
+                    result[i][0] -= extendedMatrix[i][j]*result[i][0];
+                }
+                result[i][0] += extendedMatrix[i][extendedMatrix[0].length - 1];
             }
 
             return result;
